@@ -1,8 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
+  	<title>Twittler</title>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <style>
+	    .tweets {
+		margin-top: 1em;
+		margin-left: auto;
+		margin-right: auto;
+		padding: .5em;
+		width: 30%;
+		background: #e5fde4;
+		border: 1px solid #DDD;
+		}
+	</style>
   </head>
   <body>
     <script>
@@ -10,15 +22,21 @@
       $(document).ready(function(){
         var $body = $('body');
         $body.html('');
-
-        var index = streams.home.length - 1;
-        while(index >= 0){
-          var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
+        
+    	function refreshTweets() {
+        	var streamslength = streams.home.length;
+	        var index = streamslength - 1;
+	        while(index > streamslength - 4){
+	          var tweet = streams.home[index];
+	          var $tweet = $('<div class="tweets"></div>');
+	          $tweet.html(index+'@' + tweet.user + ': ' + tweet.message + '<br />' + tweet.created_at);
+	          $tweet.appendTo($body);
+	          index -= 1;
+	        }
         }
+
+                
+        setTimeout(refreshTweets(), 200);
 
       });
 
