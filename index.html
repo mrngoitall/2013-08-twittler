@@ -9,10 +9,14 @@
 		margin-top: 1em;
 		margin-left: auto;
 		margin-right: auto;
-		padding: .5em;
+		padding: .2em;
 		width: 30%;
 		background: #e5fde4;
 		border: 1px solid #DDD;
+		}
+		
+		#menu {
+			float: right;
 		}
 	</style>
   </head>
@@ -20,26 +24,45 @@
     <script>
 
       $(document).ready(function(){
-        var $body = $('body');
+        var $body = $('#tweetbody');
         $body.html('');
+        var refresher;
         
-    	function refreshTweets() {
+    	refreshTweets = function () {
         	var streamslength = streams.home.length;
-	        var index = streamslength - 1;
-	        while(index > streamslength - 4){
+	        var index = streamslength - 11;
+	        while(index < streamslength - 1){
 	          var tweet = streams.home[index];
-	          var $tweet = $('<div class="tweets"></div>');
-	          $tweet.html(index+'@' + tweet.user + ': ' + tweet.message + '<br />' + tweet.created_at);
-	          $tweet.appendTo($body);
-	          index -= 1;
+	          var $tweet = $('<div class="tweets" data-index = ' + index + '></div>');
+	          $tweet.html('@' + tweet.user + ': ' + tweet.message + '<br /><br />' + tweet.created_at);
+	          if ($(".tweets").length >= 10)
+	          	$(".tweets").last().animate({'opacity':'0'}).remove();
+	          $tweet.prependTo($body).css({'opacity':'0'}).animate({'opacity': '1'});
+	          index += 1;
 	        }
         }
-
-                
-        setTimeout(refreshTweets(), 200);
+        
+        startAutorefresh = function() {
+        	refreshTweets();
+			refresher = setInterval(refreshTweets, 2000);
+        };
+        
+        toggleRefresher = function() {
+	        refresher ? refresher = clearInterval(refresher) : startAutorefresh();
+        };
+        
+        startAutorefresh();
+        
+        // Add ability to pause refreshes
+        $('#pause').change(toggleRefresher);
 
       });
 
     </script>
+    <div id="tweetbody">
+    </div>
+    <div id="menu">
+    <input type="checkbox" id="pause" name="pause">Pause
+    </div>
   </body>
 </html>
