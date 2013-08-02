@@ -26,36 +26,64 @@
       $(document).ready(function(){
         var $body = $('#tweetbody');
         $body.html('');
-        var refresher;
+        var refresher, user;
         
+        // Modified to also refresh user-specific tweets (if there's a parameter)
     	refreshTweets = function () {
-        	var streamslength = streams.home.length;
-	        var index = streamslength - 11;
-	        while(index < streamslength - 1){
-	          var tweet = streams.home[index];
+    		var streamslength;
+    		if (user != arguments[0]) $('.tweets').animate({'opacity':'0'}).remove();
+    		if (arguments[0] != undefined) user = arguments[0];
+    		console.log(user);
+			user ? streamslength = eval('streams.users.'+user).length : streamslength = streams.home.length;
+	        var index = Math.max(streamslength - 11,0);
+	        while(index < streamslength){
+	          var tweet;
+	          user ? tweet = eval('streams.users.'+user+'['+index+']') : tweet = streams.home[index];
 	          var $tweet = $('<div class="tweets" data-index = ' + index + '></div>');
-	          $tweet.html('@' + tweet.user + ': ' + tweet.message + '<br /><br />' + tweet.created_at);
-	          if ($(".tweets").length >= 10)
-	          	$(".tweets").last().animate({'opacity':'0'}).remove();
-	          $tweet.prependTo($body).css({'opacity':'0'}).animate({'opacity': '1'});
+	          var showUser = tweet.user;
+	          if (!user) showUser = '<a href="#" class="showuser">'+showUser+'</a>';
+	          $tweet.html('@' + showUser + ': ' + tweet.message + '<br /><br />' + tweet.created_at);
+	          if ($('.tweets').length > Math.min(9,streamslength-1)) {
+	          	/* // For some reason, this doesn't consistently work.
+	          	$(".tweets").last().slideUp(400,function() {
+	          		console.log('removed');
+	          		$(this).remove();});
+	          	console.log('should remove');
+	          	*/
+	          	$('.tweets').last().remove();
+	          	}
+	          $tweet.prependTo($body);
 	          index += 1;
 	        }
-        }
+	        // Add ability to show just a specific user
+	        $('.showuser').click(function(event) {
+		       event.preventDefault();
+		       // Stop refreshing the home tweets if we're looking up a specific user, if it's not already stopped
+		       if (refresher) {
+			       refresher = clearInterval(refresher);
+		       }
+		       console.log('stopped');
+		       userRefresher = startAutorefresh($(this).text());
+	        })
+        };
         
         startAutorefresh = function() {
-        	refreshTweets();
-			refresher = setInterval(refreshTweets, 2000);
+        	var user = arguments[0];
+        	refreshTweets(user);
+			refresher = setInterval(function() {
+				refreshTweets(user); 
+			}, 2000);
         };
         
         toggleRefresher = function() {
-	        refresher ? refresher = clearInterval(refresher) : startAutorefresh();
+	        refresher ? refresher = clearInterval(refresher) : startAutorefresh(user);
         };
         
         startAutorefresh();
         
         // Add ability to pause refreshes
         $('#pause').change(toggleRefresher);
-
+        
       });
 
     </script>
